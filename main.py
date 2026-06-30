@@ -1,12 +1,17 @@
 ﻿from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_debugtoolbar import DebugToolbarExtension
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_wtf import CSRFProtect
+from forms import LoginForm, RegisterForm
 
 app = Flask(__name__)
 app.debug = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SECRET_KEY'] = 'sekretnyklucz'
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
+
+csrf = CSRFProtect(app)
 toolbar = DebugToolbarExtension(app)
 db = SQLAlchemy(app)
 
@@ -19,38 +24,58 @@ class User(db.Model):
 # Strona główna
 @app.route('/', methods=['GET'])
 def home():
-    return render_template('index.html')
+    form = LoginForm()
+    user_score = None
+    if session.get('user_id'):
+        # late import to avoid circular import
+        from player import Player
+        player = Player.query.filter_by(user_id=session.get('user_id')).first()
+        if player is None:
+            # create player record if missing
+            player = Player(user_id=session.get('user_id'))
+            db.session.add(player)
+            db.session.commit()
+        user_score = player.score
+    return render_template('index.html', form=form, user_score=user_score)
 
 # Logowanie
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['POST'])
 def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        user = User.query.filter_by(username=username, password=password).first()
-        if user:
+    form = LoginForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
+        user = User.query.filter_by(username=username).first()
+        if user and check_password_hash(user.password, password):
             session['user_id'] = user.id
             flash(f"Witaj, {user.username}!")
             return redirect(url_for('home'))
         flash("Nieprawidłowa nazwa użytkownika lub hasło!")
-        return redirect(url_for('home'))
+    else:
+        flash('Błąd formularza')
     return redirect(url_for('home'))
 
 # Rejestracja użytkownika
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+    form = RegisterForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
         if User.query.filter_by(username=username).first():
             flash("Użytkownik już istnieje!")
             return redirect(url_for('home'))
-        new_user = User(username=username, password=password)
+        new_user = User(username=username, password=generate_password_hash(password))
         db.session.add(new_user)
+        db.session.commit()
+        # create player record for new user
+        from player import Player
+        player = Player(user_id=new_user.id)
+        db.session.add(player)
         db.session.commit()
         flash("Zarejestrowano pomyślnie. Możesz się zalogować.")
         return redirect(url_for('home'))
-    return render_template('register.html')
+    return render_template('register.html', form=form)
 
 # Wyloguj
 @app.route('/logout')
@@ -59,11 +84,27 @@ def logout():
     flash("Wylogowano")
     return redirect(url_for('home'))
 
+# Increment score
+@app.route('/increment_score', methods=['POST'])
+def increment_score():
+    if not session.get('user_id'):
+        flash('Musisz być zalogowany')
+        return redirect(url_for('home'))
+    from player import Player
+    player = Player.query.filter_by(user_id=session.get('user_id')).first()
+    if player is None:
+        player = Player(user_id=session.get('user_id'), score=1)
+        db.session.add(player)
+    else:
+        player.score = player.score + 1
+    db.session.commit()
+    flash('Score increased')
+    return redirect(url_for('home'))
+
 # Debug (kept)
 @app.route('/debug', methods=['GET', 'POST'])
 def debug():
-    import pdb;
-    pdb.set_trace()
+    import pdb; pdb.set_trace()
 
 if __name__ == '__main__':
     with app.app_context():

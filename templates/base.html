@@ -9,8 +9,22 @@
     <nav>
         <a href="{{ url_for('home') }}">Strona główna</a> |
         <a href="{{ url_for('register') }}">Zarejestruj</a> |
-        <a href="{{ url_for('login') }}">Zaloguj</a>
+        {% if session.get('user_id') %}
+            <a href="{{ url_for('logout') }}">Wyloguj</a>
+        {% else %}
+            <a href="{{ url_for('login') }}">Zaloguj</a>
+        {% endif %}
     </nav>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class="flashes">
+          {% for msg in messages %}
+            <li>{{ msg }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
 
     <main>
         {% block content %}{% endblock %}

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+﻿from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_debugtoolbar import DebugToolbarExtension
 
@@ -17,9 +17,24 @@ class User(db.Model):
     password = db.Column(db.String(120), nullable=False)
 
 # Strona główna
-@app.route('/')
+@app.route('/', methods=['GET'])
 def home():
     return render_template('index.html')
+
+# Logowanie
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username, password=password).first()
+        if user:
+            session['user_id'] = user.id
+            flash(f"Witaj, {user.username}!")
+            return redirect(url_for('home'))
+        flash("Nieprawidłowa nazwa użytkownika lub hasło!")
+        return redirect(url_for('home'))
+    return redirect(url_for('home'))
 
 # Rejestracja użytkownika
 @app.route('/register', methods=['GET', 'POST'])
@@ -28,26 +43,23 @@ def register():
         username = request.form['username']
         password = request.form['password']
         if User.query.filter_by(username=username).first():
-            return "Użytkownik już istnieje!"
+            flash("Użytkownik już istnieje!")
+            return redirect(url_for('home'))
         new_user = User(username=username, password=password)
         db.session.add(new_user)
         db.session.commit()
+        flash("Zarejestrowano pomyślnie. Możesz się zalogować.")
         return redirect(url_for('home'))
     return render_template('register.html')
 
-# Logowanie użytkownika
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        user = User.query.filter_by(username=username, password=password).first()
-        if user:
-            return f"Witaj, {user.username}!"
-        return "Nieprawidłowa nazwa użytkownika lub hasło!"
-    return render_template('login.html')
+# Wyloguj
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    flash("Wylogowano")
+    return redirect(url_for('home'))
 
-# Chuj debuger skurwysyn jebany
+# Debug (kept)
 @app.route('/debug', methods=['GET', 'POST'])
 def debug():
     import pdb;

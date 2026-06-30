@@ -6,10 +6,20 @@
 
     <h2>Logowanie</h2>
     <form method="POST" action="{{ url_for('login') }}">
-        <input type="text" name="username" placeholder="Nazwa użytkownika" required>
-        <input type="password" name="password" placeholder="Hasło" required>
-        <button type="submit">Zaloguj</button>
+        {{ form.hidden_tag() }}
+        <p>{{ form.username(size=32, placeholder='Nazwa użytkownika') }}</p>
+        <p>{{ form.password(placeholder='Hasło') }}</p>
+        <p>{{ form.submit() }}</p>
     </form>
 
     <p>Nie masz konta? <a href="{{ url_for('register') }}">Zarejestruj się</a></p>
+
+    {% if user_score is not none %}
+    <hr />
+    <h3>Twój score: {{ user_score }}</h3>
+    <form method="POST" action="{{ url_for('increment_score') }}">
+        {{ csrf_token() }}
+        <button type="submit">+1</button>
+    </form>
+    {% endif %}
 {% endblock %}

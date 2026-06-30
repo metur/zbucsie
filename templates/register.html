@@ -2,9 +2,10 @@
 {% block title %}Rejestracja{% endblock %}
 {% block content %}
     <h1>ZAREJESTRUJ SIE!</h1>
-<form method="POST">
-    <input type="text" name="username" placeholder="Nazwa użytkownika" required>
-    <input type="password" name="password" placeholder="Hasło" required>
-    <button type="submit">Zarejestruj</button>
+<form method="POST" action="{{ url_for('register') }}">
+    {{ form.hidden_tag() }}
+    <p>{{ form.username(size=32, placeholder='Nazwa użytkownika') }}</p>
+    <p>{{ form.password(placeholder='Hasło') }}</p>
+    <p>{{ form.submit() }}</p>
 </form>
 {% endblock %}

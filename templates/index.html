@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strona główna</title>
+</head>
+<body>
+    <h1>Witaj w grze!</h1>
+    <p>To jest przykładowa strona główna.</p>
+    <p>
+        <a href="{{ url_for('register') }}"><button type="button">Zarejestruj</button></a>
+        <a href="{{ url_for('login') }}"><button type="button">Zaloguj</button></a>
+    </p>
+</body>
+</html>

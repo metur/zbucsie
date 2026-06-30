@@ -12,11 +12,13 @@
         <a href="{{ url_for('login') }}">Zaloguj</a>
     </nav>
 
-    <h1>Witaj w grze!</h1>
+{% extends 'base.html' %}
+{% block title %}Strona główna{% endblock %}
+{% block content %}
+    <h1>ZBUC SIE!</h1>
     <p>To jest przykładowa strona główna.</p>
     <p>
         <a href="{{ url_for('register') }}"><button type="button">Zarejestruj</button></a>
         <a href="{{ url_for('login') }}"><button type="button">Zaloguj</button></a>
     </p>
-</body>
-</html>
+{% endblock %}

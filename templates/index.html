@@ -6,6 +6,12 @@
     <title>Strona główna</title>
 </head>
 <body>
+    <nav>
+        <a href="{{ url_for('home') }}">Strona główna</a> |
+        <a href="{{ url_for('register') }}">Zarejestruj</a> |
+        <a href="{{ url_for('login') }}">Zaloguj</a>
+    </nav>
+
     <h1>Witaj w grze!</h1>
     <p>To jest przykładowa strona główna.</p>
     <p>

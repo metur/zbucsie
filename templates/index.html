@@ -18,8 +18,8 @@
     <hr />
     <h3>Twój score: {{ user_score }}</h3>
     <form method="POST" action="{{ url_for('increment_score') }}">
-        {{ csrf_token() }}
-        <button type="submit">+1</button>
+        {{ increment_form.hidden_tag() }}
+        <p>{{ increment_form.submit() }}</p>
     </form>
     {% endif %}
 {% endblock %}

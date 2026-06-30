@@ -2,7 +2,7 @@
 from flask_debugtoolbar import DebugToolbarExtension
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_wtf import CSRFProtect
-from forms import LoginForm, RegisterForm
+from forms import LoginForm, RegisterForm, EmptyForm
 from extensions import db
 
 app = Flask(__name__)
@@ -26,6 +26,7 @@ class User(db.Model):
 @app.route('/', methods=['GET'])
 def home():
     form = LoginForm()
+    increment_form = EmptyForm()
     user_score = None
     if session.get('user_id'):
         # late import to avoid circular import
@@ -37,7 +38,7 @@ def home():
             db.session.add(player)
             db.session.commit()
         user_score = player.score
-    return render_template('index.html', form=form, user_score=user_score)
+    return render_template('index.html', form=form, increment_form=increment_form, user_score=user_score)
 
 # Logowanie
 @app.route('/login', methods=['POST'])
@@ -88,6 +89,10 @@ def logout():
 # Increment score
 @app.route('/increment_score', methods=['POST'])
 def increment_score():
+    form = EmptyForm()
+    if not form.validate_on_submit():
+        flash('Invalid request (CSRF token missing or invalid)')
+        return redirect(url_for('home'))
     if not session.get('user_id'):
         flash('Musisz być zalogowany')
         return redirect(url_for('home'))

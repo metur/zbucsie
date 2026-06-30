@@ -109,5 +109,7 @@ def debug():
 
 if __name__ == '__main__':
     with app.app_context():
+        # Ensure models are imported so SQLAlchemy knows about all tables
+        import player
         db.create_all()  # Tworzenie tabeli w bazie danych
     app.run(debug=True)

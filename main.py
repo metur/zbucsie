@@ -1,9 +1,9 @@
 ﻿from flask import Flask, render_template, request, redirect, url_for, flash, session
-from flask_sqlalchemy import SQLAlchemy
 from flask_debugtoolbar import DebugToolbarExtension
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_wtf import CSRFProtect
 from forms import LoginForm, RegisterForm
+from extensions import db
 
 app = Flask(__name__)
 app.debug = True
@@ -13,7 +13,8 @@ app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
 csrf = CSRFProtect(app)
 toolbar = DebugToolbarExtension(app)
-db = SQLAlchemy(app)
+# initialize shared db with app
+db.init_app(app)
 
 # Model użytkownika
 class User(db.Model):

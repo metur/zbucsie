@@ -55,6 +55,12 @@
             border-radius: 8px;
         }
         
+        .image-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
         .buttons-container {
             display: flex;
             gap: 20px;
@@ -116,27 +122,23 @@
 
 {% block content %}
     <div class="dashboard-container">
-        <div class="header">
-            <h1>ZBUC SIE!</h1>
-        </div>
-        
         <div class="info-bar">
             <div class="info-item">
                 <span>{{ username }}</span>
-                <div>Zalogowany jako</div>
+                <div>Zalogowany bezi</div>
             </div>
             <div class="info-item">
                 <span id="score">{{ user_score }}</span>
-                <div>Score</div>
+                <div>Bryłki</div>
             </div>
             <div class="info-item">
                 <span id="workers">{{ workers }}</span>
-                <div>Pracownicy</div>
+                <div>{{ workers_plural }}</div>
             </div>
         </div>
         
         <div class="image-placeholder">
-            [Obrazek]
+            <img src="{{ url_for('static', filename=camp + '_gray.png') }}" alt="Camp">
         </div>
         
         <div class="buttons-container">
@@ -144,7 +146,7 @@
                 <img src="{{ url_for('static', filename='brylka.webp') }}" alt="Brylka">
                 <span class="increment-text">+<span id="incrementAmount">1</span></span>
             </button>
-            <button id="buyWorkerBtn">Kup pracownika ({{ worker_cost }} score)</button>
+            <button id="buyWorkerBtn">Zatrudnij {{ worker_name }} ({{ worker_cost }} Bryłki)</button>
         </div>
     </div>
 

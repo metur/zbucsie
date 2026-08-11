@@ -25,7 +25,7 @@ def increment_all_scores():
     """Increment score for all players based on their workers"""
     with app.app_context():
         from player import Player
-        players = Player.query.filter_by(first_login=True).all()
+        players = Player.query.filter(Player.camp != None).all()
         for player in players:
             player.score = player.score + 1 + player.workers
         db.session.commit()
@@ -68,10 +68,19 @@ def dashboard():
         db.session.add(player)
         db.session.commit()
     
+    if player.camp is None:
+        return redirect(url_for('choose_camp'))
+    
     increment_form = EmptyForm()
     user_score = player.score
     username = user.username if user else 'Unknown'
-    return render_template('dashboard.html', increment_form=increment_form, user_score=user_score, username=username, workers=player.workers, worker_cost=2137)
+    
+    camp_names = {'stary': 'Kopacza', 'nowy': 'Kreta', 'bagno': 'Nowicjusza'}
+    camp_plural = {'stary': 'Kopacze', 'nowy': 'Krety', 'bagno': 'Nowicjusze'}
+    worker_name = camp_names.get(player.camp, 'pracownik')
+    workers_plural = camp_plural.get(player.camp, 'Pracownicy')
+    
+    return render_template('dashboard.html', increment_form=increment_form, user_score=user_score, username=username, workers=player.workers, worker_cost=2137, camp=player.camp, worker_name=worker_name, workers_plural=workers_plural)
 
 # Buy worker
 @app.route('/buy_worker', methods=['POST'])
@@ -103,10 +112,8 @@ def login():
             from player import Player
             player = Player.query.filter_by(user_id=user.id).first()
             if player is None:
-                player = Player(user_id=user.id, score=0, first_login=True)
+                player = Player(user_id=user.id, score=0)
                 db.session.add(player)
-            else:
-                player.first_login = True
             db.session.commit()
             
             session['user_id'] = user.id
@@ -116,6 +123,26 @@ def login():
     else:
         flash('Błąd formularza')
     return redirect(url_for('home'))
+
+# Wybór obozu
+@app.route('/choose_camp', methods=['GET', 'POST'])
+def choose_camp():
+    if not session.get('user_id'):
+        flash('Musisz być zalogowany')
+        return redirect(url_for('home'))
+    
+    if request.method == 'POST':
+        camp = request.form.get('camp')
+        if camp in ['stary', 'nowy', 'bagno']:
+            from player import Player
+            player = Player.query.filter_by(user_id=session.get('user_id')).first()
+            if player:
+                player.camp = camp
+                db.session.commit()
+                return redirect(url_for('dashboard'))
+        flash('Wybór obozu jest nieprawidłowy')
+    
+    return render_template('choose_camp.html')
 
 # Rejestracja użytkownika
 @app.route('/register', methods=['GET', 'POST'])

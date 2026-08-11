@@ -14,7 +14,7 @@ app.config['SECRET_KEY'] = 'sekretnyklucz'
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
 csrf = CSRFProtect(app)
-toolbar = DebugToolbarExtension(app)
+# toolbar = DebugToolbarExtension(app)
 # initialize shared db with app
 db.init_app(app)
 

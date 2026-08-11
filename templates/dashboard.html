@@ -6,18 +6,23 @@
 
     <hr />
     <h3>Twój score: <span id="score">{{ user_score }}</span></h3>
+    <p>Pracownicy: <span id="workers">{{ workers }}</span></p>
 
     <form method="POST" action="{{ url_for('increment_score') }}" id="incrementForm">
         {{ increment_form.hidden_tag() }}
         <p>{{ increment_form.submit() }}</p>
     </form>
 
+    <button id="buyWorkerBtn">Kup pracownika ({{ worker_cost }} score)</button>
+
     <script>
         let score = {{ user_score if user_score is not none else 0 }};
+        let workers = {{ workers if workers is not none else 0 }};
+        const workerCost = {{ worker_cost }};
         
-        // Increment score every second
+        // Increment score every second (1 base + workers)
         setInterval(function() {
-            score++;
+            score += 1 + workers;
             document.getElementById('score').textContent = score;
             
             // Sync with server
@@ -43,6 +48,33 @@
                     'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.content || ''
                 }
             }).catch(err => console.error('Error syncing score:', err));
+        });
+
+        // Handle worker purchase
+        document.getElementById('buyWorkerBtn').addEventListener('click', function() {
+            if (score < workerCost) {
+                alert('Nie masz wystarczającej ilości score!');
+                return;
+            }
+            
+            fetch('{{ url_for("buy_worker") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Błąd: ' + data.error);
+                } else {
+                    score = data.score;
+                    workers = data.workers;
+                    document.getElementById('score').textContent = score;
+                    document.getElementById('workers').textContent = workers;
+                }
+            })
+            .catch(err => console.error('Error buying worker:', err));
         });
     </script>
 {% endblock %}

@@ -22,12 +22,12 @@ db.init_app(app)
 scheduler = BackgroundScheduler()
 
 def increment_all_scores():
-    """Increment score for all players who have logged in by 1"""
+    """Increment score for all players based on their workers"""
     with app.app_context():
         from player import Player
         players = Player.query.filter_by(first_login=True).all()
         for player in players:
-            player.score = player.score + 1
+            player.score = player.score + 1 + player.workers
         db.session.commit()
 
 # Schedule the task to run every second
@@ -71,7 +71,25 @@ def dashboard():
     increment_form = EmptyForm()
     user_score = player.score
     username = user.username if user else 'Unknown'
-    return render_template('dashboard.html', increment_form=increment_form, user_score=user_score, username=username)
+    return render_template('dashboard.html', increment_form=increment_form, user_score=user_score, username=username, workers=player.workers, worker_cost=21)
+
+# Buy worker
+@app.route('/buy_worker', methods=['POST'])
+def buy_worker():
+    if not session.get('user_id'):
+        return {'error': 'Not logged in'}, 403
+    
+    from player import Player
+    player = Player.query.filter_by(user_id=session.get('user_id')).first()
+    
+    if player is None or player.score < 21:
+        return {'error': 'Not enough score'}, 400
+    
+    player.score -= 21
+    player.workers += 1
+    db.session.commit()
+    
+    return {'score': player.score, 'workers': player.workers}, 200
 
 # Logowanie
 @app.route('/login', methods=['POST'])

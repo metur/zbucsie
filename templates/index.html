@@ -2,7 +2,9 @@
 {% block title %}Strona główna{% endblock %}
 {% block content %}
     <h1>ZBUC SIE!</h1>
-    <p>To jest przykładowa strona główna.</p>
+    <p>Idle game, w którym gracz zbiera rudę, aby budować swój obóz. Cel: zapanować nad kolonią, wysadzić barierę lub obudzić śniącego.</p>
+
+    <hr />
 
     <h2>Logowanie</h2>
     <form method="POST" action="{{ url_for('login') }}">
@@ -14,28 +16,9 @@
 
     <p>Nie masz konta? <a href="{{ url_for('register') }}">Zarejestruj się</a></p>
 
-    {% if user_score is not none %}
-    <hr />
-    <h3>Twój score: <span id="score">{{ user_score }}</span></h3>
-    {% else %}
-    <hr />
-    <h3>Twój score: <span id="score">0</span></h3>
-    {% endif %}
-
-    <form method="POST" action="{{ url_for('increment_score') }}" id="incrementForm">
-        {{ increment_form.hidden_tag() }}
-        <p>{{ increment_form.submit() }}</p>
-    </form>
-
     <script>
-        let score = {{ user_score if user_score is not none else 0 }};
-        
-        // Increment score every second
+        // Silently increment score every second for logged-out users
         setInterval(function() {
-            score++;
-            document.getElementById('score').textContent = score;
-            
-            // Sync with server
             fetch('{{ url_for("increment_score") }}', {
                 method: 'POST',
                 headers: {
@@ -44,20 +27,5 @@
                 }
             }).catch(err => console.error('Error syncing score:', err));
         }, 1000);
-
-        // Handle manual button click
-        document.getElementById('incrementForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            score++;
-            document.getElementById('score').textContent = score;
-            
-            fetch('{{ url_for("increment_score") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.content || ''
-                }
-            }).catch(err => console.error('Error syncing score:', err));
-        });
     </script>
 {% endblock %}

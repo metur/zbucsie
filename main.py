@@ -27,21 +27,30 @@ class User(db.Model):
 def home():
     form = LoginForm()
     increment_form = EmptyForm()
-    user_score = None
     if session.get('user_id'):
-        # late import to avoid circular import
-        from player import Player
-        player = Player.query.filter_by(user_id=session.get('user_id')).first()
-        if player is None:
-            # create player record if missing
-            player = Player(user_id=session.get('user_id'))
-            db.session.add(player)
-            db.session.commit()
-        user_score = player.score
-    else:
-        # Get score from session for logged-out users
-        user_score = session.get('guest_score', 0)
-    return render_template('index.html', form=form, increment_form=increment_form, user_score=user_score)
+        return redirect(url_for('dashboard'))
+    return render_template('index.html', form=form, increment_form=increment_form)
+
+# Dashboard
+@app.route('/dashboard', methods=['GET'])
+def dashboard():
+    if not session.get('user_id'):
+        flash('Musisz być zalogowany')
+        return redirect(url_for('home'))
+    
+    user = User.query.filter_by(id=session.get('user_id')).first()
+    from player import Player
+    player = Player.query.filter_by(user_id=session.get('user_id')).first()
+    if player is None:
+        # create player record if missing
+        player = Player(user_id=session.get('user_id'))
+        db.session.add(player)
+        db.session.commit()
+    
+    increment_form = EmptyForm()
+    user_score = player.score
+    username = user.username if user else 'Unknown'
+    return render_template('dashboard.html', increment_form=increment_form, user_score=user_score, username=username)
 
 # Logowanie
 @app.route('/login', methods=['POST'])
@@ -67,7 +76,7 @@ def login():
             
             session['user_id'] = user.id
             flash(f"Witaj, {user.username}!")
-            return redirect(url_for('home'))
+            return redirect(url_for('dashboard'))
         flash("Nieprawidłowa nazwa użytkownika lub hasło!")
     else:
         flash('Błąd formularza')

@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+    <h1>ZBUC SIE!</h1>
+    <p>Zalogowany jako: <strong>{{ username }}</strong></p>
+
+    <hr />
+    <h3>Twój score: <span id="score">{{ user_score }}</span></h3>
+
+    <form method="POST" action="{{ url_for('increment_score') }}" id="incrementForm">
+        {{ increment_form.hidden_tag() }}
+        <p>{{ increment_form.submit() }}</p>
+    </form>
+
+    <script>
+        let score = {{ user_score if user_score is not none else 0 }};
+        
+        // Increment score every second
+        setInterval(function() {
+            score++;
+            document.getElementById('score').textContent = score;
+            
+            // Sync with server
+            fetch('{{ url_for("increment_score") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                }
+            }).catch(err => console.error('Error syncing score:', err));
+        }, 1000);
+
+        // Handle manual button click
+        document.getElementById('incrementForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            score++;
+            document.getElementById('score').textContent = score;
+            
+            fetch('{{ url_for("increment_score") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                }
+            }).catch(err => console.error('Error syncing score:', err));
+        });
+    </script>
+{% endblock %}

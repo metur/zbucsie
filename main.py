@@ -42,11 +42,8 @@ scheduler.start()
 # Shut down the scheduler when exiting the app
 atexit.register(lambda: scheduler.shutdown())
 
-# Model użytkownika
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    password = db.Column(db.String(120), nullable=False)
+# Import models
+from player import User, Player
 
 # Strona główna
 @app.route('/', methods=['GET'])
@@ -64,7 +61,6 @@ def dashboard():
         return redirect(url_for('home'))
     
     user = User.query.filter_by(id=session.get('user_id')).first()
-    from player import Player
     player = Player.query.filter_by(user_id=session.get('user_id')).first()
     if player is None:
         # create player record if missing

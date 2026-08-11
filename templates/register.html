@@ -5,7 +5,7 @@
 <form method="POST" action="{{ url_for('register') }}">
     {{ form.hidden_tag() }}
     <p>{{ form.username(size=32, placeholder='Nazwa użytkownika') }}</p>
-    <p>{{ form.password(placeholder='Hasło') }}</p>
+    <p>{{ form.password(size=128, placeholder='Hasło') }}</p>
     <p>{{ form.submit() }}</p>
 </form>
 {% endblock %}

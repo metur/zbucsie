@@ -1,0 +1,12 @@
+# Projekt: Web serwis z grą komputerową
+- Cel gry: Zbudowanie jednego z trzech obozów.
+- Mechanika:
+  - Zbieranie waluty poprzez klikanie przycisku.
+  - Możliwość zakupu autoklikania za walutę.
+- Funkcjonalności:
+  - Tworzenie kont użytkowników.
+  - Możliwość powrotu i kontynuowania rozgrywki.
+- Plany na przyszłość:
+  - Achievementy.
+  - Jednostki atakujące i broniące.
+- Deployment: Finalnie aplikacja ma być zdeployowana, początkowo wersja lokalna.

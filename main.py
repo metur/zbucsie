@@ -38,6 +38,9 @@ def home():
             db.session.add(player)
             db.session.commit()
         user_score = player.score
+    else:
+        # Get score from session for logged-out users
+        user_score = session.get('guest_score', 0)
     return render_template('index.html', form=form, increment_form=increment_form, user_score=user_score)
 
 # Logowanie
@@ -49,6 +52,19 @@ def login():
         password = form.password.data
         user = User.query.filter_by(username=username).first()
         if user and check_password_hash(user.password, password):
+            # Merge guest score with user score
+            guest_score = session.get('guest_score', 0)
+            if guest_score > 0:
+                from player import Player
+                player = Player.query.filter_by(user_id=user.id).first()
+                if player is None:
+                    player = Player(user_id=user.id, score=guest_score)
+                    db.session.add(player)
+                else:
+                    player.score = player.score + guest_score
+                db.session.commit()
+                session.pop('guest_score', None)
+            
             session['user_id'] = user.id
             flash(f"Witaj, {user.username}!")
             return redirect(url_for('home'))
@@ -89,23 +105,34 @@ def logout():
 # Increment score
 @app.route('/increment_score', methods=['POST'])
 def increment_score():
-    form = EmptyForm()
-    if not form.validate_on_submit():
-        flash('Invalid request (CSRF token missing or invalid)')
+    # CSRF protection for POST requests
+    token = request.headers.get('X-CSRFToken') or request.form.get('csrf_token')
+    if not token:
+        flash('Invalid request (CSRF token missing)')
         return redirect(url_for('home'))
-    if not session.get('user_id'):
-        flash('Musisz być zalogowany')
+    
+    from flask_wtf.csrf import validate_csrf
+    try:
+        validate_csrf(token)
+    except:
+        flash('Invalid request (CSRF token invalid)')
         return redirect(url_for('home'))
-    from player import Player
-    player = Player.query.filter_by(user_id=session.get('user_id')).first()
-    if player is None:
-        player = Player(user_id=session.get('user_id'), score=1)
-        db.session.add(player)
+    
+    if session.get('user_id'):
+        # Logged in user - save to database
+        from player import Player
+        player = Player.query.filter_by(user_id=session.get('user_id')).first()
+        if player is None:
+            player = Player(user_id=session.get('user_id'), score=1)
+            db.session.add(player)
+        else:
+            player.score = player.score + 1
+        db.session.commit()
     else:
-        player.score = player.score + 1
-    db.session.commit()
-    flash('Score increased')
-    return redirect(url_for('home'))
+        # Logged out user - save to session
+        session['guest_score'] = session.get('guest_score', 0) + 1
+    
+    return '', 204  # Return empty response with 204 No Content
 
 # Debug (kept)
 @app.route('/debug', methods=['GET', 'POST'])

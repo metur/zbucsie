@@ -4,6 +4,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_wtf import CSRFProtect
 from forms import LoginForm, RegisterForm, EmptyForm
 from extensions import db
+from apscheduler.schedulers.background import BackgroundScheduler
+import atexit
 
 app = Flask(__name__)
 app.debug = True
@@ -15,6 +17,25 @@ csrf = CSRFProtect(app)
 toolbar = DebugToolbarExtension(app)
 # initialize shared db with app
 db.init_app(app)
+
+# Initialize APScheduler
+scheduler = BackgroundScheduler()
+
+def increment_all_scores():
+    """Increment score for all players who have logged in by 1"""
+    with app.app_context():
+        from player import Player
+        players = Player.query.filter_by(first_login=True).all()
+        for player in players:
+            player.score = player.score + 1
+        db.session.commit()
+
+# Schedule the task to run every second
+scheduler.add_job(func=increment_all_scores, trigger="interval", seconds=1)
+scheduler.start()
+
+# Shut down the scheduler when exiting the app
+atexit.register(lambda: scheduler.shutdown())
 
 # Model użytkownika
 class User(db.Model):
@@ -61,18 +82,14 @@ def login():
         password = form.password.data
         user = User.query.filter_by(username=username).first()
         if user and check_password_hash(user.password, password):
-            # Merge guest score with user score
-            guest_score = session.get('guest_score', 0)
-            if guest_score > 0:
-                from player import Player
-                player = Player.query.filter_by(user_id=user.id).first()
-                if player is None:
-                    player = Player(user_id=user.id, score=guest_score)
-                    db.session.add(player)
-                else:
-                    player.score = player.score + guest_score
-                db.session.commit()
-                session.pop('guest_score', None)
+            from player import Player
+            player = Player.query.filter_by(user_id=user.id).first()
+            if player is None:
+                player = Player(user_id=user.id, score=0, first_login=True)
+                db.session.add(player)
+            else:
+                player.first_login = True
+            db.session.commit()
             
             session['user_id'] = user.id
             flash(f"Witaj, {user.username}!")
@@ -117,15 +134,13 @@ def increment_score():
     # CSRF protection for POST requests
     token = request.headers.get('X-CSRFToken') or request.form.get('csrf_token')
     if not token:
-        flash('Invalid request (CSRF token missing)')
-        return redirect(url_for('home'))
+        return '', 403  # Forbidden
     
     from flask_wtf.csrf import validate_csrf
     try:
         validate_csrf(token)
     except:
-        flash('Invalid request (CSRF token invalid)')
-        return redirect(url_for('home'))
+        return '', 403  # Forbidden
     
     if session.get('user_id'):
         # Logged in user - save to database
@@ -140,6 +155,7 @@ def increment_score():
     else:
         # Logged out user - save to session
         session['guest_score'] = session.get('guest_score', 0) + 1
+        session.modified = True  # Ensure session is saved
     
     return '', 204  # Return empty response with 204 No Content
 

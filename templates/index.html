@@ -17,15 +17,6 @@
     <p>Nie masz konta? <a href="{{ url_for('register') }}">Zarejestruj się</a></p>
 
     <script>
-        // Silently increment score every second for logged-out users
-        setInterval(function() {
-            fetch('{{ url_for("increment_score") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.content || ''
-                }
-            }).catch(err => console.error('Error syncing score:', err));
-        }, 1000);
+        // Score increments automatically on server - no need for client-side increments
     </script>
 {% endblock %}

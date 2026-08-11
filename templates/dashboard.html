@@ -75,11 +75,31 @@
         #incrementBtn {
             background-color: #0066cc;
             color: white;
+            padding: 15px;
+            width: 100px;
+            height: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            overflow: visible;
         }
         
         #incrementBtn:hover {
             background-color: #0052a3;
             transform: scale(1.05);
+        }
+        
+        #incrementBtn img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
+        
+        #incrementBtn .increment-text {
+            font-size: 14px;
+            font-weight: bold;
         }
         
         #buyWorkerBtn {
@@ -120,7 +140,10 @@
         </div>
         
         <div class="buttons-container">
-            <button id="incrementBtn">+<span id="incrementAmount">1</span></button>
+            <button id="incrementBtn">
+                <img src="{{ url_for('static', filename='brylka.webp') }}" alt="Brylka">
+                <span class="increment-text">+<span id="incrementAmount">1</span></span>
+            </button>
             <button id="buyWorkerBtn">Kup pracownika ({{ worker_cost }} score)</button>
         </div>
     </div>

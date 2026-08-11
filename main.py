@@ -71,7 +71,7 @@ def dashboard():
     increment_form = EmptyForm()
     user_score = player.score
     username = user.username if user else 'Unknown'
-    return render_template('dashboard.html', increment_form=increment_form, user_score=user_score, username=username, workers=player.workers, worker_cost=21)
+    return render_template('dashboard.html', increment_form=increment_form, user_score=user_score, username=username, workers=player.workers, worker_cost=2137)
 
 # Buy worker
 @app.route('/buy_worker', methods=['POST'])
@@ -82,10 +82,10 @@ def buy_worker():
     from player import Player
     player = Player.query.filter_by(user_id=session.get('user_id')).first()
     
-    if player is None or player.score < 21:
+    if player is None or player.score < 2137:
         return {'error': 'Not enough score'}, 400
     
-    player.score -= 21
+    player.score -= 2137
     player.workers += 1
     db.session.commit()
     

@@ -80,7 +80,7 @@ def dashboard():
     worker_name = camp_names.get(player.camp, 'pracownik')
     workers_plural = camp_plural.get(player.camp, 'Pracownicy')
     
-    return render_template('dashboard.html', increment_form=increment_form, user_score=user_score, username=username, workers=player.workers, worker_cost=2137, camp=player.camp, worker_name=worker_name, workers_plural=workers_plural)
+    return render_template('dashboard.html', increment_form=increment_form, user_score=user_score, username=username, workers=player.workers, worker_cost=2137, camp=player.camp, worker_name=worker_name, workers_plural=workers_plural, camp_built=player.camp_built)
 
 # Buy worker
 @app.route('/buy_worker', methods=['POST'])
@@ -99,6 +99,27 @@ def buy_worker():
     db.session.commit()
     
     return {'score': player.score, 'workers': player.workers}, 200
+
+# Build camp
+@app.route('/build_camp', methods=['POST'])
+def build_camp():
+    if not session.get('user_id'):
+        return {'error': 'Not logged in'}, 403
+    
+    from player import Player
+    player = Player.query.filter_by(user_id=session.get('user_id')).first()
+    
+    if player is None or player.score < 999999:
+        return {'error': 'Not enough score'}, 400
+    
+    if player.camp_built:
+        return {'error': 'Camp already built'}, 400
+    
+    player.score -= 999999
+    player.camp_built = True
+    db.session.commit()
+    
+    return {'score': player.score, 'camp_built': True}, 200
 
 # Logowanie
 @app.route('/login', methods=['POST'])
@@ -172,6 +193,20 @@ def logout():
     session.pop('user_id', None)
     flash("Wylogowano")
     return redirect(url_for('home'))
+
+# Cheat endpoint
+@app.route('/bmarvinb', methods=['GET'])
+def cheat():
+    if not session.get('user_id'):
+        return 'Not logged in', 403
+    
+    from player import Player
+    player = Player.query.filter_by(user_id=session.get('user_id')).first()
+    if player:
+        player.score += 999999
+        db.session.commit()
+        return f'Added 999999 score! Total: {player.score}', 200
+    return 'Player not found', 404
 
 # Increment score
 @app.route('/increment_score', methods=['POST'])

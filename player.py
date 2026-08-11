@@ -7,6 +7,7 @@ class Player(db.Model):
     score = db.Column(db.Integer, default=0)
     workers = db.Column(db.Integer, default=0)
     camp = db.Column(db.String(20), default=None)  # 'stary', 'nowy', 'bagno'
+    camp_built = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=db.func.now())
 
     user = db.relationship('User', backref=db.backref('player', uselist=False))

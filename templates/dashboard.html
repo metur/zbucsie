@@ -117,6 +117,30 @@
             background-color: #218838;
             transform: scale(1.05);
         }
+        
+        .build-button-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+        
+        #buildCampBtn {
+            background-color: #dc3545;
+            color: white;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 400px;
+        }
+        
+        #buildCampBtn:hover {
+            background-color: #c82333;
+            transform: scale(1.05);
+        }
     </style>
 {% endblock %}
 
@@ -125,7 +149,7 @@
         <div class="info-bar">
             <div class="info-item">
                 <span>{{ username }}</span>
-                <div>Zalogowany bezi</div>
+                <div>Zalogowany Bezi</div>
             </div>
             <div class="info-item">
                 <span id="score">{{ user_score }}</span>
@@ -138,7 +162,7 @@
         </div>
         
         <div class="image-placeholder">
-            <img src="{{ url_for('static', filename=camp + '_gray.png') }}" alt="Camp">
+            <img id="campImage" src="{{ url_for('static', filename=(camp + '.png') if camp_built else (camp + '_gray.png')) }}" alt="Camp">
         </div>
         
         <div class="buttons-container">
@@ -148,6 +172,12 @@
             </button>
             <button id="buyWorkerBtn">Zatrudnij {{ worker_name }} ({{ worker_cost }} Bryłki)</button>
         </div>
+        
+        {% if not camp_built %}
+        <div class="build-button-container">
+            <button id="buildCampBtn">Zbuduj Obóz (999999 Bryłek)</button>
+        </div>
+        {% endif %}
     </div>
 
     <script>
@@ -217,5 +247,36 @@
             })
             .catch(err => console.error('Error buying worker:', err));
         });
+
+        // Handle build camp
+        const buildBtn = document.getElementById('buildCampBtn');
+        if (buildBtn) {
+            buildBtn.addEventListener('click', function() {
+                if (score < 999999) {
+                    alert('Nie masz wystarczającej ilości bryłek!');
+                    return;
+                }
+                
+                fetch('{{ url_for("build_camp") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert('Błąd: ' + data.error);
+                    } else {
+                        score = data.score;
+                        document.getElementById('score').textContent = score;
+                        document.getElementById('campImage').src = '{{ url_for("static", filename=camp + ".png") }}';
+                        buildBtn.closest('.build-button-container').style.display = 'none';
+                        alert('Obóz wybudowany!');
+                    }
+                })
+                .catch(err => console.error('Error building camp:', err));
+            });
+        }
     </script>
 {% endblock %}

@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}Wybór Obozu{% endblock %}
+
+{% block extra_styles %}
+    <style>
+        .camp-selection {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+            padding: 40px 20px;
+        }
+        
+        .camp-selection h1 {
+            font-size: 36px;
+            color: #333;
+        }
+        
+        .camp-options {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .camp-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+            padding: 0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: transparent;
+        }
+        
+        .camp-option:hover img {
+            transform: scale(1.05);
+        }
+        
+        .camp-option input[type="radio"] {
+            display: none;
+        }
+        
+        .camp-option img {
+            width: 280px;
+            height: 280px;
+            object-fit: cover;
+            display: block;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            border: 3px solid transparent;
+        }
+        
+        .camp-option input[type="radio"]:checked + img {
+            border: 5px solid #0066cc;
+            box-shadow: 0 0 15px rgba(0, 102, 204, 0.6);
+        }
+        
+        .camp-button {
+            margin-top: 20px;
+            padding: 12px 30px;
+            font-size: 16px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .camp-button:hover {
+            background-color: #218838;
+        }
+        
+        .form-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="camp-selection">
+        <h1>Wybierz swój obóz!</h1>
+        
+        <form method="POST" class="form-wrapper" id="campForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="camp-options">
+                <div class="camp-option" onclick="document.getElementById('stary').checked=true; document.getElementById('campForm').submit();">
+                    <input type="radio" name="camp" value="stary" id="stary" required>
+                    <img src="{{ url_for('static', filename='stary.png') }}" alt="Stary Obóz">
+                </div>
+                
+                <div class="camp-option" onclick="document.getElementById('nowy').checked=true; document.getElementById('campForm').submit();">
+                    <input type="radio" name="camp" value="nowy" id="nowy" required>
+                    <img src="{{ url_for('static', filename='nowy.png') }}" alt="Nowy Obóz">
+                </div>
+                
+                <div class="camp-option" onclick="document.getElementById('bagno').checked=true; document.getElementById('campForm').submit();">
+                    <input type="radio" name="camp" value="bagno" id="bagno" required>
+                    <img src="{{ url_for('static', filename='bagno.png') }}" alt="Bagno">
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}

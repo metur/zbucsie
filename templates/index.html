@@ -1,22 +1,104 @@
 {% extends 'base.html' %}
-{% block title %}Strona główna{% endblock %}
+{% block title %}ZBUĆ SIE{% endblock %}
+
+{% block extra_styles %}
+    <style>
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .login-container h1 {
+            font-size: 36px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .login-container p {
+            text-align: center;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .login-form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .login-form input[type="text"],
+        .login-form input[type="password"] {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        
+        .login-form input[type="text"]:focus,
+        .login-form input[type="password"]:focus {
+            outline: none;
+            border-color: #0066cc;
+            box-shadow: 0 0 5px rgba(0, 102, 204, 0.3);
+        }
+        
+        .login-form input[type="submit"] {
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .login-form input[type="submit"]:hover {
+            background-color: #0052a3;
+            transform: scale(1.02);
+        }
+        
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .register-link a {
+            color: #0066cc;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
-    <h1>ZBUĆ SIE!</h1>
-    <p>Idle game, w którym gracz zbiera rudę, aby budować swój obóz. Cel: zapanować nad kolonią, wysadzić barierę lub obudzić śniącego.</p>
+    <div class="login-container">
+        <h1>ZBUĆ SIE!</h1>
+        <p>Idle game, w którym gracz zbiera rudę, aby budować swój obóz. Cel: zapanować nad kolonią, wysadzić barierę lub obudzić śniącego.</p>
 
-    <hr />
+        <form method="POST" action="{{ url_for('login') }}" class="login-form">
+            {{ form.hidden_tag() }}
+            {{ form.username(placeholder='Nazwa użytkownika') }}
+            {{ form.password(placeholder='Hasło') }}
+            {{ form.submit() }}
+        </form>
 
-    <h2>Logowanie</h2>
-    <form method="POST" action="{{ url_for('login') }}">
-        {{ form.hidden_tag() }}
-        <p>{{ form.username(size=32, placeholder='Nazwa użytkownika') }}</p>
-        <p>{{ form.password(placeholder='Hasło') }}</p>
-        <p>{{ form.submit() }}</p>
-    </form>
-
-    <p>Nie masz konta? <a href="{{ url_for('register') }}">Zarejestruj się</a></p>
-
-    <script>
-        // Score increments automatically on server - no need for client-side increments
-    </script>
+        <div class="register-link">
+            Nie masz konta? <a href="{{ url_for('register') }}">Zarejestruj się</a>
+        </div>
+    </div>
 {% endblock %}

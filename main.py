@@ -56,7 +56,6 @@ def home():
 @app.route('/dashboard', methods=['GET'])
 def dashboard():
     if not session.get('user_id'):
-        flash('Musisz być zalogowany')
         return redirect(url_for('home'))
     
     user = User.query.filter_by(id=session.get('user_id')).first()
@@ -77,10 +76,12 @@ def dashboard():
     
     camp_names = {'stary': 'Kopacza', 'nowy': 'Kreta', 'bagno': 'Nowicjusza'}
     camp_plural = {'stary': 'Kopacze', 'nowy': 'Krety', 'bagno': 'Nowicjusze'}
+    camp_costs = {'stary': 99999, 'nowy': 999999, 'bagno': 9999999}
     worker_name = camp_names.get(player.camp, 'pracownik')
     workers_plural = camp_plural.get(player.camp, 'Pracownicy')
+    build_cost = camp_costs.get(player.camp, 999999)
     
-    return render_template('dashboard.html', increment_form=increment_form, user_score=user_score, username=username, workers=player.workers, worker_cost=2137, camp=player.camp, worker_name=worker_name, workers_plural=workers_plural, camp_built=player.camp_built)
+    return render_template('dashboard.html', increment_form=increment_form, user_score=user_score, username=username, workers=player.workers, worker_cost=2137, camp=player.camp, worker_name=worker_name, workers_plural=workers_plural, camp_built=player.camp_built, build_cost=build_cost)
 
 # Buy worker
 @app.route('/buy_worker', methods=['POST'])
@@ -109,13 +110,16 @@ def build_camp():
     from player import Player
     player = Player.query.filter_by(user_id=session.get('user_id')).first()
     
-    if player is None or player.score < 999999:
+    camp_costs = {'stary': 99999, 'nowy': 999999, 'bagno': 9999999}
+    cost = camp_costs.get(player.camp, 999999)
+    
+    if player is None or player.score < cost:
         return {'error': 'Not enough score'}, 400
     
     if player.camp_built:
         return {'error': 'Camp already built'}, 400
     
-    player.score -= 999999
+    player.score -= cost
     player.camp_built = True
     db.session.commit()
     
@@ -138,18 +142,13 @@ def login():
             db.session.commit()
             
             session['user_id'] = user.id
-            flash(f"Witaj, {user.username}!")
             return redirect(url_for('dashboard'))
-        flash("Nieprawidłowa nazwa użytkownika lub hasło!")
-    else:
-        flash('Błąd formularza')
-    return redirect(url_for('home'))
+        return redirect(url_for('home'))
 
 # Wybór obozu
 @app.route('/choose_camp', methods=['GET', 'POST'])
 def choose_camp():
     if not session.get('user_id'):
-        flash('Musisz być zalogowany')
         return redirect(url_for('home'))
     
     if request.method == 'POST':
@@ -161,7 +160,6 @@ def choose_camp():
                 player.camp = camp
                 db.session.commit()
                 return redirect(url_for('dashboard'))
-        flash('Wybór obozu jest nieprawidłowy')
     
     return render_template('choose_camp.html')
 
@@ -172,9 +170,6 @@ def register():
     if form.validate_on_submit():
         username = form.username.data
         password = form.password.data
-        if User.query.filter_by(username=username).first():
-            flash("Użytkownik już istnieje!")
-            return redirect(url_for('home'))
         new_user = User(username=username, password=generate_password_hash(password))
         db.session.add(new_user)
         db.session.commit()
@@ -183,7 +178,6 @@ def register():
         player = Player(user_id=new_user.id)
         db.session.add(player)
         db.session.commit()
-        flash("Zarejestrowano pomyślnie. Możesz się zalogować.")
         return redirect(url_for('home'))
     return render_template('register.html', form=form)
 
@@ -191,7 +185,6 @@ def register():
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)
-    flash("Wylogowano")
     return redirect(url_for('home'))
 
 # Cheat endpoint

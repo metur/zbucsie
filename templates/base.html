@@ -51,11 +51,11 @@
 </head>
 <body>
     <nav>
-        <a href="{{ url_for('home') }}">Strona główna</a>|
+        <a href="{{ url_for('home') }}">ZBUĆ SIE</a>|
         {% if session.get('user_id') %}
-            <a href="{{ url_for('logout') }}">Wyloguj</a>
+            <a href="{{ url_for('logout') }}">WYLOGUJ</a>
         {% else %}
-            <a href="{{ url_for('register') }}">Zarejestruj</a>
+            <a href="{{ url_for('register') }}">ZAREJESTRUJ</a>
         {% endif %}
     </nav>
 

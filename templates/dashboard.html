@@ -141,6 +141,21 @@
             background-color: #c82333;
             transform: scale(1.05);
         }
+        
+        .victory-message {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .victory-message h2 {
+            font-size: 32px;
+            color: #333;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            margin: 0;
+        }
     </style>
 {% endblock %}
 
@@ -175,7 +190,17 @@
         
         {% if not camp_built %}
         <div class="build-button-container">
-            <button id="buildCampBtn">Zbuduj Obóz (999999 Bryłek)</button>
+            <button id="buildCampBtn">Zbuduj Obóz ({{ build_cost }} bryłek)</button>
+        </div>
+        {% else %}
+        <div class="victory-message">
+            {% if camp == 'stary' %}
+                <h2>Zapanowałeś nad kolonią!</h2>
+            {% elif camp == 'nowy' %}
+                <h2>Wysadziłeś barierę!</h2>
+            {% elif camp == 'bagno' %}
+                <h2>Obudziłeś śniącego!</h2>
+            {% endif %}
         </div>
         {% endif %}
     </div>
@@ -251,8 +276,9 @@
         // Handle build camp
         const buildBtn = document.getElementById('buildCampBtn');
         if (buildBtn) {
+            const buildCost = {{ build_cost }};
             buildBtn.addEventListener('click', function() {
-                if (score < 999999) {
+                if (score < buildCost) {
                     alert('Nie masz wystarczającej ilości bryłek!');
                     return;
                 }
@@ -271,8 +297,17 @@
                         score = data.score;
                         document.getElementById('score').textContent = score;
                         document.getElementById('campImage').src = '{{ url_for("static", filename=camp + ".png") }}';
-                        buildBtn.closest('.build-button-container').style.display = 'none';
-                        alert('Obóz wybudowany!');
+                        buildBtn.closest('.build-button-container').innerHTML = `
+                            <div class="victory-message">
+                                {% if camp == 'stary' %}
+                                    <h2>Zapanowałeś nad kolonią!</h2>
+                                {% elif camp == 'nowy' %}
+                                    <h2>Wysadziłeś barierę!</h2>
+                                {% elif camp == 'bagno' %}
+                                    <h2>Obudziłeś śniącego!</h2>
+                                {% endif %}
+                            </div>
+                        `;
                     }
                 })
                 .catch(err => console.error('Error building camp:', err));

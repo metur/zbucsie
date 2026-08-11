@@ -1,11 +1,93 @@
 {% extends 'base.html' %}
 {% block title %}Rejestracja{% endblock %}
+
+{% block extra_styles %}
+    <style>
+        .register-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .register-container h1 {
+            font-size: 36px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .register-form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .register-form input[type="text"],
+        .register-form input[type="password"] {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        
+        .register-form input[type="text"]:focus,
+        .register-form input[type="password"]:focus {
+            outline: none;
+            border-color: #0066cc;
+            box-shadow: 0 0 5px rgba(0, 102, 204, 0.3);
+        }
+        
+        .register-form input[type="submit"] {
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .register-form input[type="submit"]:hover {
+            background-color: #218838;
+            transform: scale(1.02);
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .back-link a {
+            color: #0066cc;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
-    <h1>ZAREJESTRUJ SIE!</h1>
-<form method="POST" action="{{ url_for('register') }}">
-    {{ form.hidden_tag() }}
-    <p>{{ form.username(size=32, placeholder='Nazwa użytkownika') }}</p>
-    <p>{{ form.password(size=128, placeholder='Hasło') }}</p>
-    <p>{{ form.submit() }}</p>
-</form>
+    <div class="register-container">
+        <h1>ZAREJESTRUJ SIE!</h1>
+        <form method="POST" action="{{ url_for('register') }}" class="register-form">
+            {{ form.hidden_tag() }}
+            {{ form.username(placeholder='Nazwa użytkownika') }}
+            {{ form.password(placeholder='Hasło') }}
+            {{ form.submit() }}
+        </form>
+        <div class="back-link">
+            <a href="{{ url_for('home') }}">Wróć do logowania</a>
+        </div>
+    </div>
 {% endblock %}

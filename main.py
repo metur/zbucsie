@@ -18,6 +18,11 @@ toolbar = DebugToolbarExtension(app)
 # initialize shared db with app
 db.init_app(app)
 
+# Tworzy bazy danych na startup
+with app.app_context():
+    import player
+    db.create_all()
+
 # Initialize APScheduler
 scheduler = BackgroundScheduler()
 
@@ -238,8 +243,4 @@ def debug():
     import pdb; pdb.set_trace()
 
 if __name__ == '__main__':
-    with app.app_context():
-        # Ensure models are imported so SQLAlchemy knows about all tables
-        import player
-        db.create_all()  # Tworzenie tabeli w bazie danych
     app.run(debug=True)

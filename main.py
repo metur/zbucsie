@@ -1,16 +1,29 @@
-﻿from flask import Flask, render_template, request, redirect, url_for, flash, session
+﻿import os
+import atexit
+
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_debugtoolbar import DebugToolbarExtension
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_wtf import CSRFProtect
 from forms import LoginForm, RegisterForm, EmptyForm
 from extensions import db
 from apscheduler.schedulers.background import BackgroundScheduler
-import atexit
+
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+INSTANCE_DIR = os.path.join(BASE_DIR, 'instance')
+os.makedirs(INSTANCE_DIR, exist_ok=True)
+LOCAL_DB_PATH = os.path.join(INSTANCE_DIR, 'users.db').replace('\\', '/')
 
 app = Flask(__name__)
 app.debug = True
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
-app.config['SECRET_KEY'] = 'sekretnyklucz'
+
+database_url = os.getenv('DATABASE_URL')
+if database_url:
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + LOCAL_DB_PATH
+
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-change-me')
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
 csrf = CSRFProtect(app)
